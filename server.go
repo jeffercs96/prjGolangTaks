@@ -1,9 +1,9 @@
 package main
 
 import (
+	"goTasks/db"
+	"goTasks/models"
 	"net/http"
-
-	"goTasks/controllers"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -19,8 +19,19 @@ func main() {
 
 	// Routes
 	e.GET("/", hello)
-	e.GET("/employees", controllers.GetEmployees)
+	// e.GET("/employees", controllers.GetEmployees)
 	// Start server
+	// Crea 5 productos
+	db.Connect()
+	db := db.GetDB()
+	db.AutoMigrate(&models.Product{})
+
+	// Crea la tabla "products" en la base de datos si no existe
+	models.CreateProduct(&models.Product{Code: "P1", Price: 100})
+	models.CreateProduct(&models.Product{Code: "P2", Price: 200})
+	models.CreateProduct(&models.Product{Code: "P3", Price: 300})
+	models.CreateProduct(&models.Product{Code: "P4", Price: 400})
+	models.CreateProduct(&models.Product{Code: "P5", Price: 500})
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
