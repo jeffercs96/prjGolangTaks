@@ -1,8 +1,8 @@
 package main
 
 import (
-	"goTasks/controllers"
 	"goTasks/db"
+	"goTasks/handlers"
 	"goTasks/models"
 	"net/http"
 
@@ -30,7 +30,7 @@ func main() {
 	// Crea 5 productos
 	db := db.GetDB()
 	db.AutoMigrate(&models.Product{})
-	e.GET("/products", listProducts)
+	e.GET("/products", handlers.ListProducts)
 	/* o tambien e.GET("/products", echo.WrapHandler(http.HandlerFunc(controllers.ListProducts))) */
 	// Crea la tabla "products" en la base de datos si no existe
 	// models.CreateProduct(&models.Product{Code: "P1", Price: 100})
@@ -44,9 +44,4 @@ func main() {
 // Handler
 func hello(c echo.Context) error {
 	return c.String(http.StatusOK, "Hello, World!")
-}
-
-func listProducts(c echo.Context) error {
-	controllers.ListProducts(c.Response().Writer, c.Request())
-	return nil
 }
