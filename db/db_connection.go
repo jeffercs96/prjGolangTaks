@@ -11,7 +11,7 @@ import (
 const (
 	DBtype     = "mysql"
 	DBUser     = "root"
-	DBPassword = "jeff"
+	DBPassword = "jefferson"
 	DBName     = "taskPrj"
 )
 
