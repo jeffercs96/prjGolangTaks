@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/go-sql-driver/mysql v1.7.0
+	github.com/gorilla/mux v1.8.0
 	github.com/labstack/echo/v4 v4.10.0
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.3
@@ -22,7 +23,6 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gravityblast/fresh v0.0.0-20190826141211-0fa698148017 // indirect
 	github.com/howeyc/fsnotify v0.9.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
