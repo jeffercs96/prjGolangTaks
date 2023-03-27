@@ -1,97 +1,90 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"goTasks/models"
 
-	"github.com/gorilla/mux"
+	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
-// ListProducts maneja la solicitud GET /products y devuelve una lista de todos los productos
-func ListProducts(w http.ResponseWriter, r *http.Request) {
+// GetAllProducts devuelve todos los productos de la base de datos
+func GetAllProducts(c echo.Context) error {
 	products, err := models.GetAllProducts()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return c.JSON(http.StatusInternalServerError, "Error getting products")
 	}
-	json.NewEncoder(w).Encode(products)
+	return c.JSON(http.StatusOK, products)
 }
 
-// GetProduct maneja la solicitud GET /products/:id y devuelve el producto con el ID especificado
-func GetProduct(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		http.Error(w, "Invalid product ID", http.StatusBadRequest)
-		return
+// CreateProduct crea un nuevo producto en la base de datos
+func CreateProduct(c echo.Context) error {
+	product := new(models.Product)
+	if err := c.Bind(product); err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid request payload")
 	}
-	product, err := models.GetProduct(uint(id))
-	if err != nil {
-		http.Error(w, "Product not found", http.StatusNotFound)
-		return
+	if err := models.CreateProduct(product); err != nil {
+		return c.JSON(http.StatusInternalServerError, "Error creating product")
 	}
-	json.NewEncoder(w).Encode(product)
+	return c.JSON(http.StatusCreated, product)
 }
 
-// CreateProduct maneja la solicitud POST /products y crea un nuevo producto en la base de datos
-func CreateProduct(w http.ResponseWriter, r *http.Request) {
-	var product models.Product
-	err := json.NewDecoder(r.Body).Decode(&product)
-	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
+// GetProduct obtiene un producto de la base de datos por su ID
+func GetProduct(c echo.Context) error {
+	// Parsear el id del body
+	var body struct {
+		ID string `json:"id"`
 	}
-	err = models.CreateProduct(&product)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if err := c.Bind(&body); err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid request body")
 	}
-	json.NewEncoder(w).Encode(product)
+	id, err := uuid.Parse(body.ID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid product ID")
+	}
+
+	// Obtener el producto desde la base de datos
+	product, err := models.GetProduct(id)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, "Product not found")
+	}
+
+	// Retornar el producto como respuesta
+	return c.JSON(http.StatusOK, product)
 }
 
-// UpdateProduct maneja la solicitud PUT /products/:id y actualiza el producto con el ID especificado
-func UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+// UpdateProduct actualiza un producto en la base de datos
+func UpdateProduct(c echo.Context) error {
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		http.Error(w, "Invalid product ID", http.StatusBadRequest)
-		return
+		return c.JSON(http.StatusBadRequest, "Invalid product ID")
 	}
-	product, err := models.GetProduct(uint(id))
+	product, err := models.GetProduct(id)
 	if err != nil {
-		http.Error(w, "Product not found", http.StatusNotFound)
-		return
+		return c.JSON(http.StatusNotFound, "Product not found")
 	}
-	err = json.NewDecoder(r.Body).Decode(product)
-	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
+	if err := c.Bind(product); err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid request payload")
 	}
-	err = models.UpdateProduct(product)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if err := models.UpdateProduct(product); err != nil {
+		return c.JSON(http.StatusInternalServerError, "Error updating product")
 	}
-	json.NewEncoder(w).Encode(product)
+	return c.JSON(http.StatusOK, product)
 }
 
-// DeleteProduct maneja la solicitud DELETE /products/:
-func DeleteProduct(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+// DeleteProduct elimina un producto de la base de datos
+func DeleteProduct(c echo.Context) error {
+	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		http.Error(w, "Invalid product ID", http.StatusBadRequest)
-		return
+		return c.JSON(http.StatusBadRequest, "Invalid product ID")
 	}
-	product, err := models.GetProduct(uint(id))
+	product, err := models.GetProduct(id)
 	if err != nil {
-		http.Error(w, "Product not found", http.StatusNotFound)
-		return
+		return c.JSON(http.StatusNotFound, "Product not found")
 	}
-	err = models.DeleteProduct(product)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if err := models.DeleteProduct(product); err != nil {
+		return c.JSON(http.StatusInternalServerError, "Error deleting product")
 	}
-	w.WriteHeader(http.StatusNoContent)
+	return c.NoContent(http.StatusNoContent)
 }

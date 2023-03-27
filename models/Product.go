@@ -2,14 +2,18 @@ package models
 
 import (
 	"goTasks/db"
+	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Product struct {
-	gorm.Model
-	Code  string
-	Price uint
+	ID        uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
+	Code      string    `json:"code" gorm:"unique"`
+	Price     uint      `json:"price"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // GetDB obtiene la conexión a la base de datos
@@ -32,10 +36,10 @@ func CreateProduct(product *Product) error {
 }
 
 // GetProduct obtiene un producto de la base de datos por su ID
-func GetProduct(id uint) (*Product, error) {
+func GetProduct(id uuid.UUID) (*Product, error) {
 	var product Product
 	db := GetDB()
-	err := db.First(&product, id).Error
+	err := db.Where("id = ?", id).First(&product).Error
 	return &product, err
 }
 
